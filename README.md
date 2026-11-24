@@ -19,11 +19,22 @@ its dependency stack; Homebrew alone is not a supported full build environment.
 
 ## Translation
 
-The translation overlay is not wired in yet. Its source repo/path and locale
-need to be supplied, then the relevant `.po` files can be copied into the
-matching paths in Ardour's source tree before the build. Ardour expects UI and
-core-library translations in separate PO files; see upstream `TRANSLATORS`.
-The build should run `waf i18n` so the `.mo` catalogs are generated and included.
+The Simplified Chinese translation lives in the private
+[`brucekomike/ardour_zh_hans`](https://github.com/brucekomike/ardour_zh_hans)
+repo. Apply its five `.po` files to an Ardour checkout before compiling:
+
+```sh
+scripts/apply-translation-overlay.sh /path/to/ardour /path/to/ardour_zh_hans
+```
+
+The CI workflow will need authenticated read access to that private repository.
+Use a fine-grained GitHub token restricted to **Contents: read** on
+`ardour_zh_hans`, stored in the public CI repo as the Actions secret
+`ARDOUR_TRANSLATION_READ_TOKEN`. Do not put the token in source or logs.
+
+Ardour expects UI and core-library translations in separate PO files; see
+upstream `TRANSLATORS`. The build should run `waf i18n` so the `.mo` catalogs
+are generated and included.
 
 ## Redistribution and licensing notes
 
@@ -50,6 +61,5 @@ licenses of all shipped components before publishing an installer.
 
 ## Status
 
-Initial project setup. CI workflows and the translation overlay will be added
-once the translation source is identified and the build/dependency strategy is
-selected for each runner.
+The translation overlay script is ready. Platform build workflows remain to be
+added; each runner needs an appropriate Ardour dependency/build stack.
