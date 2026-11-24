@@ -1,0 +1,9 @@
+diff --git a/wscript b/wscript
+--- a/wscript
++++ b/wscript
+@@ -906,3 +906,5 @@
+     opt.add_option('--no-nls', action='store_true', default=False, dest='no_nls',
+                     help='Disable i18n (native language support)')
++    opt.add_option('--nls', action='store_false', default=False, dest='no_nls',
++                    help='Enable i18n (native language support; enabled by default)')
+     opt.add_option('--no-phone-home', action='store_true', default=False, dest='no_phone_home',

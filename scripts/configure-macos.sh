@@ -13,12 +13,13 @@ shift
 if [[ -z "${ARDOUR_PYTHON:-}" || -z "${ARDOUR_EXTRA_INCLUDE:-}" ]]; then
 	source "$script_dir/activate-macos-build-env.sh"
 fi
-"$script_dir/apply-macos-alias-workaround.sh" "$source_dir"
+"$script_dir/apply-macos-ci-patches.sh" "$source_dir"
 
 configure_args=(
 	--noconfirm
 	--no-phone-home
 	--no-carbon
+	--nls
 	--optimize
 	--ptformat
 	--with-backends=jack,coreaudio,dummy

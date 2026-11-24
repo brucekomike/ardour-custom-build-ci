@@ -60,12 +60,14 @@ passes keg-only libarchive include/lib paths through Waf's `--also-include` and
 `--also-libdir` options and applies the Darwin alias workaround:
 
 ```sh
-source scripts/activate-macos-build-env.sh
-scripts/apply-translation-overlay.sh /path/to/ardour /path/to/ardour_zh_hans
-scripts/configure-macos.sh /path/to/ardour
-cd /path/to/ardour
+ARDOUR_SRC=/path/to/ardour
+CI_TOOLS=/path/to/ardour-custom-build-ci
+source "$CI_TOOLS/scripts/activate-macos-build-env.sh"
+"$CI_TOOLS/scripts/apply-translation-overlay.sh" "$ARDOUR_SRC" /path/to/ardour_zh_hans
+"$CI_TOOLS/scripts/configure-macos.sh" "$ARDOUR_SRC"
+cd "$ARDOUR_SRC"
 "$ARDOUR_PYTHON" waf -j"$(sysctl -n hw.ncpu)"
-"$ARDOUR_PYTHON" waf i18n
+"$CI_TOOLS/scripts/package-macos-app.sh" "$ARDOUR_SRC"
 ```
 
 The Darwin workaround defines `DISABLE_VISIBILITY` for the bundled YDK/YTK GTK
@@ -73,8 +75,25 @@ targets. Their generated alias wrappers use ELF-style `__attribute__((alias))`,
 which Apple Clang rejects. The source guards both the wrapper declarations and
 the matching header aliases with this macro; the workaround is target-specific
 and only enabled for Darwin. It is a local build patch, not an upstream Ardour
-change. The script checks that the patch applies cleanly before modifying the
+change. The patch helper checks each patch applies cleanly before modifying the
 checkout.
+
+The custom-build patch series also adds an explicit Waf `--nls` option; the
+configure helper uses it so the CI configuration states the intended setting.
+Upstream already enables NLS by default (`--no-nls` is opt-out), and the
+packaging script also defaults `WITH_NLS=1`; the package helper runs `waf i18n`
+and invokes `osx_build --nls` so catalogs are generated and copied into the app.
+
+`package-macos-app.sh` runs after the normal compile step. It creates the
+`Ardour/Ardour9.app` bundle, adds Homebrew/MacPorts `libbrotlicommon` when the
+bundled `libbrotlidec` requires it, checks bundle-relative runtime dependencies,
+ad-hoc signs supported Mach-O files and seals the app last. Apple's `codesign`
+currently rejects the optional `Harrison.lv2/XT_SP.so` binary in ad-hoc mode;
+the finalizer reports that explicitly and leaves that plugin unsigned. This is
+a local CI artifact, not a Developer ID signed or notarized distribution. The
+helper refuses to run with `APPLE_DEVELOPER_ID_FOR_APPLICATION` set, so it
+cannot accidentally invalidate a Developer ID signature. The user's `allow.sh`
+only removes quarantine after download, so it is not run by CI.
 
 ## Translation
 
