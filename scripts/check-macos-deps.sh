@@ -28,4 +28,10 @@ if [[ ${#missing[@]} -gt 0 ]]; then
 	exit 1
 fi
 
+if ! printf '#include <archive.h>\nint main() { return 0; }\n' | "${CXX:-clang++}" -x c++ -fsyntax-only - >/dev/null; then
+	printf 'The compiler cannot find libarchive headers (archive.h).\n' >&2
+	printf 'Source activate-macos-build-env.sh before configuring Ardour.\n' >&2
+	exit 1
+fi
+
 printf 'All checked Ardour macOS dependency modules are visible to pkg-config.\n'

@@ -54,16 +54,16 @@ scripts/setup-macos-arm64-brew.sh       # Apple Silicon
 scripts/setup-macos-x86_64-port.sh      # Intel; add --user-space for isolated, no-sudo MacPorts
 ```
 
-Both scripts support `--dry-run`. After setup, source the environment helper in
-the same shell as the build, overlay the private translation, then configure,
-compile, and generate catalogs:
+Both setup scripts support `--dry-run`. After setup, source the environment
+helper, overlay the private translation, then use the configure helper. It
+passes keg-only libarchive include/lib paths through Waf's `--also-include` and
+`--also-libdir` options and applies the Darwin alias workaround:
 
 ```sh
 source scripts/activate-macos-build-env.sh
 scripts/apply-translation-overlay.sh /path/to/ardour /path/to/ardour_zh_hans
-scripts/apply-macos-alias-workaround.sh /path/to/ardour
+scripts/configure-macos.sh /path/to/ardour
 cd /path/to/ardour
-"$ARDOUR_PYTHON" waf configure --noconfirm   # add --arm64 on Apple Silicon
 "$ARDOUR_PYTHON" waf -j"$(sysctl -n hw.ncpu)"
 "$ARDOUR_PYTHON" waf i18n
 ```
