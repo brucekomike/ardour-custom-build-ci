@@ -23,8 +23,8 @@ libraries.
 
 GitHub currently offers Intel macOS runners (`macos-15-intel` and
 `macos-26-intel`) as well as Apple Silicon runners (`macos-15` and `macos-26`).
-The Intel images are scheduled to be retired after macOS 15 in Fall 2027, so
-keep arm64 as the long-term target. See the [GitHub-hosted runner reference](https://docs.github.com/actions/reference/runners/github-hosted-runners-reference).
+Intel support is transitional, so keep arm64 as the long-term target and verify
+the live labels before pinning a workflow. See the [GitHub-hosted runner reference](https://docs.github.com/actions/reference/runners/github-hosted-runners-reference).
 
 MacPorts is a package manager, not a CI worker provider. Its port tree supports
 Intel macOS and has ports for Ardour's main native dependencies. There is no
