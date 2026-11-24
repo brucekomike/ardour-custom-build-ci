@@ -15,7 +15,52 @@ build configuration, translation overlay, and CI only.
 Ardour's checked-in Windows build configuration currently targets x64, not
 Windows ARM64. Other targets will be enabled only when their toolchains and
 upstream build scripts support them. Ardour's macOS source build also requires
-its dependency stack; Homebrew alone is not a supported full build environment.
+many dependencies, so these setup scripts are a convenience and not a guarantee
+that every current Ardour revision will build against the latest package-manager
+libraries.
+
+## macOS runners and local setup
+
+GitHub currently offers Intel macOS runners (`macos-15-intel` and
+`macos-26-intel`) as well as Apple Silicon runners (`macos-15` and `macos-26`).
+The Intel images are scheduled to be retired after macOS 15 in Fall 2027, so
+keep arm64 as the long-term target. See the [GitHub-hosted runner reference](https://docs.github.com/actions/reference/runners/github-hosted-runners-reference).
+
+MacPorts is a package manager, not a CI worker provider. Its port tree supports
+Intel macOS and has ports for Ardour's main native dependencies. There is no
+Vamp SDK port, so the Intel setup script builds Vamp SDK 2.10 into a separate
+user-owned prefix. If MacPorts is absent, the script bootstraps MacPorts in
+`~/.local/opt/ardour-macports` using its official no-root mode; that fallback
+builds ports from source and can take significantly longer than the standard
+`/opt/local` installation. Use `--user-space` to force this isolated route even
+when a system MacPorts install exists. System MacPorts installs use `sudo` for
+the `/opt/local` tree; the private-prefix mode does not require it.
+
+Run the architecture dispatcher:
+
+```sh
+scripts/setup-macos.sh
+```
+
+Or call a specific manager directly:
+
+```sh
+scripts/setup-macos-arm64-brew.sh       # Apple Silicon
+scripts/setup-macos-x86_64-port.sh      # Intel; add --user-space for isolated, no-sudo MacPorts
+```
+
+Both scripts support `--dry-run`. After setup, source the environment helper in
+the same shell as the build, overlay the private translation, then configure,
+compile, and generate catalogs:
+
+```sh
+source scripts/activate-macos-build-env.sh
+scripts/apply-translation-overlay.sh /path/to/ardour /path/to/ardour_zh_hans
+cd /path/to/ardour
+"$ARDOUR_PYTHON" waf configure --noconfirm   # add --arm64 on Apple Silicon
+"$ARDOUR_PYTHON" waf -j"$(sysctl -n hw.ncpu)"
+"$ARDOUR_PYTHON" waf i18n
+```
 
 ## Translation
 
