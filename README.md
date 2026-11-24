@@ -19,6 +19,11 @@ many dependencies, so these setup scripts are a convenience and not a guarantee
 that every current Ardour revision will build against the latest package-manager
 libraries.
 
+The setup scripts are not Ardour's official macOS release build environment.
+The upstream macOS packaging tools use separate dependency stacks (notably
+`~/gtk/inst` and `~/a3/inst`); reproduce those stacks when matching an official
+release build is important.
+
 ## macOS runners and local setup
 
 GitHub currently offers Intel macOS runners (`macos-15-intel` and
@@ -56,11 +61,20 @@ compile, and generate catalogs:
 ```sh
 source scripts/activate-macos-build-env.sh
 scripts/apply-translation-overlay.sh /path/to/ardour /path/to/ardour_zh_hans
+scripts/apply-macos-alias-workaround.sh /path/to/ardour
 cd /path/to/ardour
 "$ARDOUR_PYTHON" waf configure --noconfirm   # add --arm64 on Apple Silicon
 "$ARDOUR_PYTHON" waf -j"$(sysctl -n hw.ncpu)"
 "$ARDOUR_PYTHON" waf i18n
 ```
+
+The Darwin workaround defines `DISABLE_VISIBILITY` for the bundled YDK/YTK GTK
+targets. Their generated alias wrappers use ELF-style `__attribute__((alias))`,
+which Apple Clang rejects. The source guards both the wrapper declarations and
+the matching header aliases with this macro; the workaround is target-specific
+and only enabled for Darwin. It is a local build patch, not an upstream Ardour
+change. The script checks that the patch applies cleanly before modifying the
+checkout.
 
 ## Translation
 
