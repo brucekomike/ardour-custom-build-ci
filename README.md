@@ -31,6 +31,25 @@ GitHub currently offers Intel macOS runners (`macos-15-intel` and
 Intel support is transitional, so keep arm64 as the long-term target and verify
 the live labels before pinning a workflow. See the [GitHub-hosted runner reference](https://docs.github.com/actions/reference/runners/github-hosted-runners-reference).
 
+For an integrated local checkout, clone Ardour into this repository's ignored
+`ardour/` directory. `scripts/build-macos-freebie-dmg.sh` then configures with
+`--freebie`, builds, generates catalogs, finalizes the app bundle, and lets
+`osx_build` create the DMG:
+
+```sh
+git clone <your Ardour source URL> ardour
+scripts/build-macos-freebie-dmg.sh
+```
+
+Use `--clean` to explicitly remove `ardour/build` before configuring; otherwise
+the wrapper reuses the existing build directory. The DMG filename includes
+`-demo` (Ardour's `--freebie` build marker).
+
+Set `ARDOUR_TRANSLATION_DIR` to the private translation checkout to overlay its
+PO catalogs. The source repository is ignored by this outer CI repository; its
+own uncommitted source/translation changes remain in that nested Git checkout.
+The resulting freebie DMG is under `ardour/tools/osx_packaging/`.
+
 MacPorts is a package manager, not a CI worker provider. Its port tree supports
 Intel macOS and has ports for Ardour's main native dependencies. There is no
 Vamp SDK port, so the Intel setup script builds Vamp SDK 2.10 into a separate
@@ -97,10 +116,11 @@ patch makes the first-run runtime default on across platforms, while preserving
 an existing explicit `0` or `1` preference. Existing installs already set to
 `1` are enabled regardless of this default.
 
-`package-macos-app.sh` runs after the normal compile step. It creates the
-`Ardour/Ardour9.app` bundle, adds Homebrew/MacPorts `libbrotlicommon` when the
-bundled `libbrotlidec` requires it, checks bundle-relative runtime dependencies,
-ad-hoc signs supported Mach-O files and seals the app last. Apple's `codesign`
+`package-macos-app.sh` runs after compilation. A private hook in `osx_build`
+finalizes the app after assembling it and before creating the DMG. The finalizer
+adds Homebrew/MacPorts `libbrotlicommon` when the bundled `libbrotlidec` requires
+it, checks bundle-relative runtime dependencies, ad-hoc signs supported Mach-O
+files and seals the app last. Apple's `codesign`
 currently rejects the optional `Harrison.lv2/XT_SP.so` binary in ad-hoc mode;
 the finalizer reports that explicitly and leaves that plugin unsigned. This is
 a local CI artifact, not a Developer ID signed or notarized distribution. The

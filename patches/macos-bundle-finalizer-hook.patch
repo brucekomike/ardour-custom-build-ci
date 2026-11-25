@@ -1,0 +1,12 @@
+diff --git a/tools/osx_packaging/osx_build b/tools/osx_packaging/osx_build
+--- a/tools/osx_packaging/osx_build
++++ b/tools/osx_packaging/osx_build
+@@ -957,1 +957,8 @@
+ ##### App Signing ##############################################################
++if [[ -n "${ARDOUR_CI_FINALIZE_APP:-}" ]]; then
++	if ! "$ARDOUR_CI_FINALIZE_APP" "${PRODUCT_PKG_DIR}/${APPDIR}"; then
++		echo "CI app finalization failed; not creating a DMG" >&2
++		exit 1
++	fi
++fi
++
