@@ -7,14 +7,11 @@ diff --git a/wscript b/wscript
 +    opt.add_option('--nls', action='store_false', default=False, dest='no_nls',
 +                    help='Enable i18n (native language support; enabled by default)')
      opt.add_option('--no-phone-home', action='store_true', default=False, dest='no_phone_home',
-
 diff --git a/libs/ardour/globals.cc b/libs/ardour/globals.cc
 --- a/libs/ardour/globals.cc
 +++ b/libs/ardour/globals.cc
-@@ -978,5 +978,5 @@
--#if defined(PLATFORM_WINDOWS) || defined(__APPLE__)
-+#if defined(PLATFORM_WINDOWS)
- static const bool translate_by_default = false;
+@@ -978,3 +978,3 @@
+ #if defined(PLATFORM_WINDOWS) || defined(__APPLE__)
+-static const bool translate_by_default = false;
++static const bool translate_by_default = true;
  #else
- static const bool translate_by_default = true;
- #endif

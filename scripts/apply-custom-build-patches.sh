@@ -9,7 +9,7 @@ fi
 source_dir="$(cd "$1" && pwd)"
 patch_dir="$(cd "$(dirname "$0")/.." && pwd)/patches"
 
-for patch_name in macos-disable-elf-aliases.patch macos-enable-translations-by-default.patch; do
+for patch_name in macos-disable-elf-aliases.patch enable-translations-by-default.patch; do
 	patch_file="$patch_dir/$patch_name"
 	if git -C "$source_dir" apply --check "$patch_file" >/dev/null 2>&1; then
 		git -C "$source_dir" apply "$patch_file"

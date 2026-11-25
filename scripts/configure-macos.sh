@@ -13,7 +13,7 @@ shift
 if [[ -z "${ARDOUR_PYTHON:-}" || -z "${ARDOUR_EXTRA_INCLUDE:-}" ]]; then
 	source "$script_dir/activate-macos-build-env.sh"
 fi
-"$script_dir/apply-macos-ci-patches.sh" "$source_dir"
+"$script_dir/apply-custom-build-patches.sh" "$source_dir"
 
 configure_args=(
 	--noconfirm

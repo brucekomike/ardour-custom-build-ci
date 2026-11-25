@@ -75,18 +75,27 @@ targets. Their generated alias wrappers use ELF-style `__attribute__((alias))`,
 which Apple Clang rejects. The source guards both the wrapper declarations and
 the matching header aliases with this macro; the workaround is target-specific
 and only enabled for Darwin. It is a local build patch, not an upstream Ardour
-change. The patch helper checks each patch applies cleanly before modifying the
+change. The custom-build patch helper checks each patch applies cleanly before modifying the
 checkout.
 
 There are two separate translation switches. Build-time NLS is enabled by
-default in upstream Waf (`--no-nls` opts out) and macOS packaging defaults
-`WITH_NLS=1`; this toolchain also uses `--nls` explicitly and runs `waf i18n`
-before `osx_build --nls` so catalogs are generated and copied into the app.
+default in upstream Waf (`--no-nls` opts out). The private patch adds explicit
+`--nls` support, which the macOS configure helper uses. The Windows
+`tools/x-win/compile.sh` does not pass `--no-nls`, so Waf already enables
+`ENABLE_NLS` there and the script runs `waf i18n`. macOS packaging defaults
+`WITH_NLS=1`; its package helper also runs `waf i18n` and invokes
+`osx_build --nls` so catalogs are generated and copied into the app.
+
+Apply the private patches before either platform's configure/build step; on
+Windows use `scripts/apply-custom-build-patches.sh` before
+`tools/x-win/compile.sh`.
+
 At runtime Ardour stores the user's preference in
 `~/Library/Preferences/Ardour9/.translate` (`1` enables, `0` disables). Upstream
-defaults this preference to off on macOS only when the marker is absent. The
-private custom-build patch changes that first-run default to on, while honoring
-an existing explicit `0` or `1` marker.
+defaults it off on Windows and macOS only when the marker is absent. The private
+patch makes the first-run runtime default on across platforms, while preserving
+an existing explicit `0` or `1` preference. Existing installs already set to
+`1` are enabled regardless of this default.
 
 `package-macos-app.sh` runs after the normal compile step. It creates the
 `Ardour/Ardour9.app` bundle, adds Homebrew/MacPorts `libbrotlicommon` when the
