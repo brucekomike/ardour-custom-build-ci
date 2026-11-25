@@ -78,11 +78,15 @@ and only enabled for Darwin. It is a local build patch, not an upstream Ardour
 change. The patch helper checks each patch applies cleanly before modifying the
 checkout.
 
-The custom-build patch series also adds an explicit Waf `--nls` option; the
-configure helper uses it so the CI configuration states the intended setting.
-Upstream already enables NLS by default (`--no-nls` is opt-out), and the
-packaging script also defaults `WITH_NLS=1`; the package helper runs `waf i18n`
-and invokes `osx_build --nls` so catalogs are generated and copied into the app.
+There are two separate translation switches. Build-time NLS is enabled by
+default in upstream Waf (`--no-nls` opts out) and macOS packaging defaults
+`WITH_NLS=1`; this toolchain also uses `--nls` explicitly and runs `waf i18n`
+before `osx_build --nls` so catalogs are generated and copied into the app.
+At runtime Ardour stores the user's preference in
+`~/Library/Preferences/Ardour9/.translate` (`1` enables, `0` disables). Upstream
+defaults this preference to off on macOS only when the marker is absent. The
+private custom-build patch changes that first-run default to on, while honoring
+an existing explicit `0` or `1` marker.
 
 `package-macos-app.sh` runs after the normal compile step. It creates the
 `Ardour/Ardour9.app` bundle, adds Homebrew/MacPorts `libbrotlicommon` when the
